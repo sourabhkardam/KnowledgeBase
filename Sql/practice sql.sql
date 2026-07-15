@@ -33,4 +33,25 @@ JOIN (
     SELECT dept_id, MAX(salary) AS max_salary
     FROM employee
     GROUP BY dept_id
-) m ON e.dept_id = m.dept_id AND e.salary = m.max_salary;3
+) m ON e.dept_id = m.dept_id AND e.salary = m.max_salary;
+
+
+/** Employee: eid, ename, departmentId 
+Salary: eid, salaryAmt, month, year 
+Department: depid, depName 
+Find all the employee whose salary is more than department avg salary. */
+
+SELECT ename, salaryAmt, depName
+FROM (
+    SELECT 
+        e.ename, 
+        s.salaryAmt, 
+        d.depName,
+        s.month,
+        s.year,
+        AVG(s.salaryAmt) OVER (PARTITION BY e.departmentId, s.month, s.year) AS deptAvgSalary
+    FROM Employee e
+    JOIN Salary s ON e.eid = s.eid
+    JOIN Department d ON e.departmentId = d.depid
+) t
+WHERE salaryAmt > deptAvgSalary
