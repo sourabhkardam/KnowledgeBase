@@ -1,0 +1,21 @@
+Project architecture:
+
+We have an GTM (global trade management) project which is a suppply chain based application. It was used for managing shipments across the world travelling through different modes like road, air, ocean etc. We have different modules in GTM like import, export, logistics which is responsible for different functionalites. I particularly worked for logistics module. Our module's job was to maintain the shipment and it's real time tracking for which we have integrated with different application for getting real time events. We have integrated with different application within the organization and also with an outer application also i.e. Shippeo. some of integration was for getting real time updated on events, some of them was for functionalites like getting charges and partner info and like this many more.
+
+Integration was done through a separate microservice which we called PMS. It's main job was to transform the inbound/outbound messages to application specific format and then route it to the downstream service. So GTM used to send the outbound messages to PMS and PMS used to route it to other applications.
+
+Also not every integration was done through PMS, some old integration still uses old way. We have different shipment processor whose job was to convert the inbound data to shipment format and persist in our Db table structure. So we have MPEngine and SEI processor which were used to process different form of data mostly in XML or json. Even though it was xml/json format but the data wasn't mapped directly one to one with tables and columns. For mpe xmls, we have to parse these data and then store it for which we had mpengine and for sei data it was one to one mapping.
+
+So basically in global supply chain, data is exchanged in EDI format and we have mappers (ecxpert/mercator) which convert this edi document to mpe/sei xmls. This mpe/sei xmls then used to consumed by GTM.
+
+Also within our application we had many other functionalites. Like milestone schedule events calculation, alert triggers, policy & rules to rules.
+
+CI/CD
+Firstly changes are pushed to git. Then we have Jenkins job which run twice a day not on every check-in. Basically it doesn’t trigger on every git check-in.
+As we have docker based deployment, so our job reads the docker file and create a docker image. The main thing here is the at the container startup we have configured a .sh script to execute which contains the actual logic on how our app should be deployed.
+
+In this script, it expect a war file which is already build by our job. Using this war file it deploys it in tomcat server in docker container.
+
+Once image is created it is deployed to Jfrog artifactory. And then using this image it is deployed in the respective server. For us it is QA servers.
+
+We use docker compose for deployment.

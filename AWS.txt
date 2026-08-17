@@ -1,0 +1,141 @@
+IAM: Identity and Access management
+	-> Root User: Has access to everything in AWS.
+		Note: Enable MFA for the root user.
+	
+	-> IAM User: Has limited access to AWS, only what is configured for a user. Like only allowing EC2 access to a user.
+	
+	-> IAM Group: 
+	IAM group is a group of users.So basically instead of giving permissions to users individually, we create a group and assign permissions/privileges to that group.
+	Now if any new user come, we don't need to assign the permissions/privileges to user. We will just add the user in IAM group and user will
+	have the access to resources permitted for that group.
+	for e.g. we can have group like DEV-Group, DevOps-Group, QA-Group
+	
+	-> Policies: 
+	Policies are also all about permissions/privileges. 
+	We can create our own policies. for e.g. if for EC2, we want only some actions to be allowed to user, we can do it in custom policy.
+	
+	-> Roles: 
+	To provide temporary access to AWS resources, we use roles. for e.g. if we want that an EC2 instance should have access to RDS or K8s cluster, we can create a role and assign access to RDS/K8s cluster and then assign the role to EC2 instance.
+	
+	By default, ec2 won't have any permission to access RDS/any other AWS resource?
+	
+	-> IAM in real life: 
+	In real life, to give access to user we don't create IAM user individually. In real production system, we don't have a single AWS account, instead we create AWS organizations which consists of different accounts like development account, testing account, production account, staging account, security account.
+	Also it uses concept like SCP(Service Control Policies). It defines what actions are allowed, so even if some user is admin of an account like development account, SCP can still blocks actions.
+	Also, we don't create user and it's login credentials manually. For that we use AWS IAM Identity Center (AWS SSO). 
+	
+	
+EC2: Elastic Compute Cloud
+	To create server, on which we can deploy applications, install software etc. , we use EC2. It is same as buying a laptop for personal use.
+	We use Key Pair to login to EC2 instance like login to EC2 instance using from personal laptop. 
+	To allow inbound traffic to our EC2 instance (I mean login to EC2 instance through laptop or any remote server), we need to define inbound rule in security group section.
+	
+	EC2 Networking Basics - Security Group: 
+	In security group, we define the inbound/outbound traffic rule of EC2 instance for e.g. to able to login to EC2 instance through terminal, we need to add inbound rule which allows SSH connection from any ip. We can also add specific IPs, only which can access the EC2 instance. Similary, if we want a DB to be able to access the EC2 instance, we can add that inbound rule or we want to allow HTTPS traffic, we can add http inbound rule.
+	
+	Public vs Private IP Address: 
+	An EC2 instance have two IPs, private and public. Using public IP, anyone outside AWS or anyone on internet can access the EC2 instance.
+	With Private IP, services only within AWS Vpc can access the EC2 instance. 
+	Private IP remain fixed regardless of how many times we restart the EC2 instance but public IP gets changed on every restart.
+	
+	Elastic IP Address: 
+	As public IPs keeps changing we use elastic ip to allocate a fix ip to ec2 instance and using this ip, anyone on internet can access the ec2 instance. This way even if we restart ec2 instance, we can still access the ec2 using same ip i.e. elastic ip.
+	
+EBS: Elastic Block Store
+	
+	Volumes: Storage
+	Volumes is the EC2 instance storage. Every time we create EC2 instance, we need to add a volume to it. Additionally, we can also create volume separetely and attach it to EC2 later from AWS UI.
+	Once volume is attached, we can connect with EC2 instance using terminal and then run 'lsblk' command, it will list all the harddisk, SDDs etc. of ec2.
+	
+	Also once a volume is attached to EC2 instance we need to create a filesystem in it otherwise we won't be able to use it. for that run the following command:
+	`sudo mkfs -t ext4 /dev/volume_name`
+	
+	Now we need to mount it to a directory of ec2, for that run following command:
+	`sudo mount /dev/volume_name /demo` here we assume we have already created /demo directory in ec2 instance.
+	
+	Use `df -h` command to check volume is mounted to which folder.
+	
+	Now as volume is mounted to /demo folder, you can use this folder to create files, directory etc.
+	
+	
+	Snapshot: Backup of our volume
+	AWS internally uses S3 buckets to store the snapshots. We can create snapshot from AWS UI and select which volume to use. 
+	We can't directly attach snapshot to an EC2 instance, for that create volume out of snapshot first and then attach it to EC2 instance.
+	
+	Also if we have a volume attached to an EC2 instance in 1a Availability zone and we want to now attach it to an EC2 instance in 1b AZ, we can't do it directly. For that first create a snapshot of that volume of EC2 instance of 1a zone and now using this snapshot create a volume and attach it to EC2 instance of 1b zone.
+	
+EC2 User Data Script:
+	It is the script we want to execute at the startup of EC2 instance for e.g. if we want some software like docker, jenkins etc. to install at EC2 instance startup, we can do it in user data script. 
+	At the time of EC2 instance creation, we can add this script from UI.
+	
+AWS Load Balancer:
+	To evenly distribute the incoming traffic among EC2 instances hosting an application, we use AWS LB.
+	Types of LB:
+	i) Application LB:
+		ALB works at the Application layer of OSI of a computer. It uses HTTP/HTTPS to communicate.
+	
+	ii) Network LB
+		NLB operates at Transport layer. 
+	
+	iii) Gateway LB: More of a security check point or firewall.
+	
+	Target Group:
+	We don't register the EC2 instances to Load Balancers directly because if we have to increase no of servers then every time we will have to register it with LB which is not a optimal approach. Instead we create something called `Target Group` and then will add the EC2 instances to the target group. 
+	Now LB will be communicating to Target group not the EC2 instances.
+	
+	Auto Scaling Group:
+	It is a way using which we can automatically increase/decrease servers based on user load. We don't need to manually create servers. It helps us maintain AVAILABILITY of our applications.
+	
+	We can create auto scaling group through UI. While creation, we have to select Launch Template. Launch template is nothing but the details of EC2 instance it need to create as per the user load. It is similar to how be manually create an EC2 instance. But here we won't be creating EC2 instances manually instead we define a Launch template using which AWS can increase/decrease EC2 instances based on the user load.
+	
+	While creating auto scaling group, we need to attach LB to it. We will also need to add Target group to auto scaling group config.
+	
+	Why we need to add target group while creating auto scaling group?
+	
+Amazon S3 bucket: Simple Storage Service
+	To store any amount of data from anywhere and scale it, we use S3. It is an object storage service. It stores everything in form of object and object is stored in S3 bucket.
+	A S3 bucket will be created in a region but it's name must be unique globally. We can create S3 bucket through UI and upload the files in it.
+	
+	Bucket is available in a region and is highly durable means buckets will be available in multiple AVAILABILITY ZONE  so if any issue in a AZ other AZ will have Bucket data.
+	
+	Maximum object size can be 5TB.
+	
+	We can also host a website in S3 bucket.
+	
+	Versioning: If we want to keep multiple version of same file in S3 bucket, we can do it using versioning feature of S3 bucket.
+	
+	Object lock: Helps us to prevent deletion of objects from S3 buckets.
+	
+Amazon RDS: Relational Database Service
+	AWS provides easiest way to create DB server on cloud using RDS. We can create MySQl Server, Oracle server etc. using RDS and use it for the applications. Like we can connect to DB server, after creating it using RDS, and create Database in the DB server and create tables in database.
+	
+	
+VPC: Virtual Private Cloud
+	Whenever we create an AWS account, a default network (default VPC) will be given to it and all the resources like EC2 instances, RDS server etc. will be created in this default network. 
+	But in real world, we don't do it like that instead we create our own VPC and create resources in that VPC.
+	
+	In AWS cloud, we first create VPC then in that VPC we create public subnet and private subnet. Now we add resources like EC2 instances either in public subnet or private subnet.
+	for e.g. EC2 instance we can create in public subnet and RDS in private subnet.
+	
+	Public subnet: We use public subnet for those resources for which want outside world/internet can access. So if an EC2 instance is created in public subnet then anyone outside the AWS or anyone on internet can access the it.
+	
+	Private subnet: Outside access will not be allowed to the resources added to private subnet. But it will be accessible within the VPCs means anyone on same VPC can access the resource of private subnet. for e.g. an EC2 instance on public subnet can access the RDS of private subnet if both subnet are part of same VPC.
+	
+	Note: We can have any numbers of public/private subnet in a VPC.
+	
+	Now real question is if we create a subnet in VPC, how do we know which subnet is public and which subnet is private?
+		For that, a concept comes in picture that we call `Internet Gateway`. If a subnet is attached to Internet Gateway then that subnet will be called the public subnet else a subnet will be private subnet.
+		
+	Also, if we want resources of private subnet to access resource outside AWS, we can attach it to `NAT Gateway`. Note here that we are not allowing traffic to come to private subnet instead we want traffic to go out to outer world from private subnet.
+	
+	If we want a subnet to attach to either Internet Gateway or NAT Gateway, we do it using RT(route table).
+	
+	IPv4 CIDR block:
+	It specify the IPv4 CIDR block(or IP address range) for our VPC.
+	Basically whenever we create any resources in VPC, IP address to those resource will be assigned from this CIDR block only.
+	
+	NACL: 
+	To add security at subnet level we use NACL. Just like security group, which is security at resource level for e.g. security group of EC2 instance.
+	
+	VPC Peering:
+	To establish connection b/w two VPCs we use VPC peering. 

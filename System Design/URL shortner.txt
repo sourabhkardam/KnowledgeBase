@@ -1,0 +1,76 @@
+URL Shortner
+	- Short the long URL
+		- Collision of short urls on different App instances
+			- Can use common counter, across multiple instaces, and base62 encode it.
+				- Predictibilty of url due to counter thus causes security issue. (Resolution: can tell user don't share private urls)
+			
+			- Use machine_id + counter and then base62 encode?	
+		
+
+	- Redirect URL using short url
+		- Have separte DB for read & write. I mean write to one db and have it's replicas for reading
+		- Request will go to server having read replicas.
+		
+		
+		
+MD5 converts the data into 128 bit and then convert 128 bit to hexadecimal represented number.
+As 4 bits are required to represent a max. hexa digit i.e. 15  {range: 0 - 15 (0-9, a-f)}, so the resultant 
+hexadecimal number length: 128 / 4 = 32 length
+As, 2 hexadecimal digit represent 8 bits = 1byte, so 2 hexadecimal digit = 1 byte
+
+
+Similarly 6 bits are required to represent a max. base62 digit i.e. 61 {range: 0-62 (0-9, a-z, A-Z)}
+If we need 6 chars base62 encoded string, will need 6*6 = 36 bits ~ 40 bits ~ 5 bytes
+and if we need 7 chars base62 encoded string, will need 6*7 = 42 bits ~ 48 bits ~ 6 bytes
+
+So, for 6 chars base62 encoded string will need 5 bytes i.e. trim 10 hexa chars from MD5 hexadecimal hash (because 2 hexa chars = 1 bytes)
+and for 7 chars base62 encoded string will need 6 bytes i.e. trim 12 hexa chars from MD5 hexadecimal hash 
+
+If we have to convert any base to other base, we need to first convert the first base to decimal and then convert that decimal to another base.
+
+1. Convert decimal number to any base.
+	- Decimal number to base10
+		for e.g. 451 
+					451 ÷ 10 = 45, remainder 1
+					45  ÷ 10 = 4,  remainder 5
+					4   ÷ 10 = 0,  remainder 4
+		Read remainder top to bottom i.e. 451
+		
+	- Decimal number to base2
+		for e.g. 451
+					451 ÷ 2 = 225, remainder 1
+					225 ÷ 2 = 112, remainder 1
+					112 ÷ 2 = 56,  remainder 0
+					56  ÷ 2 = 28,  remainder 0
+					28  ÷ 2 = 14,  remainder 0
+					14  ÷ 2 = 7,   remainder 0
+					7	÷ 2 = 3,   remainder 1
+					3	÷ 2 = 1,   remainder 1
+					1	÷ 2 = 0,   remainder 1
+		Read remainder top to bottom i.e. 111000011
+		
+	- Decimal number to base16
+		for e.g. 451
+					451 ÷ 16 = 28, remainder 3
+					28  ÷ 16 = 1,  remainder 12 -> hexadecimal equivalent is c
+					1	÷ 16 = 0,  remainder 1
+					
+		Read remainder top to bottom i.e. 1c3
+		
+2. Convert any base number to decimal.
+	- Base 10 to decimal number (base10 means each digit in the base10 number will be in range 0-9)
+		for e.g. 451 = 4*10^2 + 5*10^1 + 1*10^0
+					 = 400 + 50 + 1 = 451
+					 As, decimal number is a base10 number, so result is same.
+					 
+	- Base 2 to decimal number (base2 means each digit in the base2 number will be in range 0-1)
+		for e.g. 111000011 = 1*2^8 + 1*2^7 + 1*2^6 + 0*2^5 + 0*2^4 + 0*2^3 + 0*2^2 + 1*2^1 + 1*2^0
+						   = 256 + 128 + 64 + 0 + 0 + 0 + 0 + 2 + 1 = 451
+					 
+	- Base 16 to decimal number (base16 means each digit in the base16 number will be in range 0-9, a-f)
+		for e.g. 1c3 = 1*16^2 + c*16^1 + 3*16^0
+					 = 256 + 12*16 + 3 : decimal equivalent of c = 12
+					 = 256 + 192 + 3 = 451
+					 
+					 
+					 

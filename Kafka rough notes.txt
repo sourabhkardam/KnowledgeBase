@@ -1,0 +1,28 @@
+Kafka
+
+Topic
+Each kafka topic has partition in it where actual data is stored.
+If a key is passed while publishing to a topic, then messages with same key will go to same partition.
+else messages will be stored in partition in round-robin manner.
+
+Consumer group can have multiple consumers.
+Each consumer from consumer group will only consume from one partition i.e. one partition can only be consumed by one consumer from same group. 
+e.g. If we have consumer group 1 and it has 2 consumer i.e. consumer1 & consumer2 and we have a topic xyz which has 2 partition p1 and p2. then in this case, partition p1 will only be consumed by either consumer1 or consumer2 and same goes for partition p2.
+
+Consumer from different group can consume from same partition. for e.g. If we have two consumer group i.e. group 1 and group 2 and in each group we have two consumers. So in topic xyz, from p1 partition, consumers from these two groups can consume from same partition.
+
+
+Zookeeper maintains the offset, of a topic, for each consumer of a consumer group. Like in partition, till which offset message has been consumed, who consumed the the message i.e. which consumer and from which consumer group.
+If any consumer from a consumer group goes down, kafka will pick another consumer to consume message from that partition.
+
+
+Group of broker (kafka server) is known as cluster.
+So, in a topic xyz, partition p1 can be stored in broker 1 and partition p2 for same topic can be stored in broker 2.
+This is called leader of broker. for e.g. here p1 is the leader of broker 1 and p2 is the leader of broker 2 for topic xyz. All read/write happens on leader partition. 
+Also each partition will have it's replica in other broker. So broker 2 will have replica of p1 and broker 1 will have replica of p2.
+If leader partition (broker) goes down, follower/replica partition will take over.
+
+Also follower/replica partition continously gets updated with latest partition record.
+
+
+Messages which got failed or didn't got processed will go to failure/dead letter queue.
